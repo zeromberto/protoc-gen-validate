@@ -33,8 +33,9 @@ quick:
 tests: validate/validate.pb.go
 	# runs all tests against the package with race detection and coverage percentage
 	go test -race -cover
-	# tests validate proto generation
-	diff $$(bazel info bazel-genfiles)/validate/validate.pb.go validate/validate.pb.go
+	# tests validate proto generation\
+	bazel build //validate:go_default_library \
+		&& diff $$(bazel info bazel-genfiles)/validate/validate.pb.go validate/validate.pb.go
 
 .PHONY: cover
 cover:
