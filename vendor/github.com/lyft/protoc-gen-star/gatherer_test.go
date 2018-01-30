@@ -42,7 +42,7 @@ func TestGatherer_Generate(t *testing.T) {
 	assert.Equal(t, g.targets["pkg"], g.pkgs[g.targets["pkg"].GoName().String()])
 	assert.Len(t, g.targets["pkg"].Files(), 1)
 
-	assert.Equal(t, g.targets["pkg"], g.hydratePackage(f))
+	assert.Equal(t, g.targets["pkg"], g.hydratePackage(f, map[string]string{}))
 }
 
 func TestGatherer_HydrateFile(t *testing.T) {
@@ -89,13 +89,15 @@ func TestGatherer_HydrateFile(t *testing.T) {
 
 	pkg := df.Package()
 
+	comments := map[string]string{}
+
 	pgg.objs = map[string]generator.Object{
-		df.lookupName() + ".Msg":          &generator.Descriptor{DescriptorProto: m},
-		df.lookupName() + ".Msg.MapEntry": &generator.Descriptor{DescriptorProto: me},
-		df.lookupName() + ".Enum":         &generator.EnumDescriptor{EnumDescriptorProto: e},
+		df.FullyQualifiedName() + ".Msg":          &generator.Descriptor{DescriptorProto: m},
+		df.FullyQualifiedName() + ".Msg.MapEntry": &generator.Descriptor{DescriptorProto: me},
+		df.FullyQualifiedName() + ".Enum":         &generator.EnumDescriptor{EnumDescriptorProto: e},
 	}
 
-	f := g.hydrateFile(pkg, desc)
+	f := g.hydrateFile(pkg, desc, comments)
 	assert.Equal(t, pkg, f.Package())
 	assert.Equal(t, desc, f.Descriptor())
 	assert.Equal(t, goFileName(desc), f.OutputPath().String())
@@ -105,7 +107,7 @@ func TestGatherer_HydrateFile(t *testing.T) {
 
 	_, ok := g.seen(f)
 	assert.True(t, ok)
-	assert.Equal(t, f, g.hydrateFile(pkg, desc))
+	assert.Equal(t, f, g.hydrateFile(pkg, desc, comments))
 }
 
 func TestGatherer_HydrateFile_PackageMismatch(t *testing.T) {
@@ -121,7 +123,7 @@ func TestGatherer_HydrateFile_PackageMismatch(t *testing.T) {
 	desc := df.Descriptor()
 	desc.Package = proto.String("not_the_same_as_dp")
 
-	g.hydrateFile(dp, desc)
+	g.hydrateFile(dp, desc, map[string]string{})
 	assert.True(t, md.failed)
 }
 
@@ -157,10 +159,10 @@ func TestGatherer_HydrateMessage(t *testing.T) {
 	f := dm.File()
 
 	pgg.objs = map[string]generator.Object{
-		lookupName(f, dm):              dm.Descriptor(),
-		lookupName(dm, de):             de.Descriptor(),
-		dm.lookupName() + ".NestedMsg": &generator.Descriptor{DescriptorProto: nm},
-		dm.lookupName() + ".MapEntry":  &generator.Descriptor{DescriptorProto: me},
+		fullyQualifiedName(f, dm):              dm.Descriptor(),
+		fullyQualifiedName(dm, de):             de.Descriptor(),
+		dm.FullyQualifiedName() + ".NestedMsg": &generator.Descriptor{DescriptorProto: nm},
+		dm.FullyQualifiedName() + ".MapEntry":  &generator.Descriptor{DescriptorProto: me},
 	}
 
 	m := g.hydrateMessage(f, desc)
@@ -517,7 +519,7 @@ func TestGatherer_HydrateEnum(t *testing.T) {
 	pgg := initGathererPGG(g)
 
 	de := dummyEnum()
-	pgg.objs[de.lookupName()] = de.genDesc
+	pgg.objs[de.FullyQualifiedName()] = de.genDesc
 	p := de.Parent()
 
 	desc := de.rawDesc
@@ -559,8 +561,8 @@ func TestGatherer_HydrateService(t *testing.T) {
 
 	desc := &descriptor.ServiceDescriptorProto{
 		Method: []*descriptor.MethodDescriptorProto{{
-			InputType:  proto.String(io.lookupName()),
-			OutputType: proto.String(io.lookupName()),
+			InputType:  proto.String(io.FullyQualifiedName()),
+			OutputType: proto.String(io.FullyQualifiedName()),
 		}},
 	}
 
@@ -583,8 +585,8 @@ func TestGatherer_HydrateMethod(t *testing.T) {
 
 	s := dummyService()
 	desc := &descriptor.MethodDescriptorProto{
-		InputType:  proto.String(io.lookupName()),
-		OutputType: proto.String(io.lookupName()),
+		InputType:  proto.String(io.FullyQualifiedName()),
+		OutputType: proto.String(io.FullyQualifiedName()),
 	}
 
 	m := g.hydrateMethod(s, desc)
@@ -622,15 +624,15 @@ func TestGatherer_Init(t *testing.T) {
 	assert.NotNil(t, g.entities)
 }
 
-func TestGatherer_ResolveLookupName(t *testing.T) {
+func TestGatherer_ResolveFullyQualifiedName(t *testing.T) {
 	t.Parallel()
 
 	f := dummyFile()
 	m := dummyMsg()
 
 	g := initTestGatherer(t)
-	assert.Equal(t, f.Name().String(), g.resolveLookupName(f))
-	assert.Equal(t, m.lookupName(), g.resolveLookupName(m))
+	assert.Equal(t, f.Name().String(), g.resolveFullyQualifiedName(f))
+	assert.Equal(t, m.FullyQualifiedName(), g.resolveFullyQualifiedName(m))
 }
 
 func TestGatherer_Add(t *testing.T) {
@@ -639,8 +641,8 @@ func TestGatherer_Add(t *testing.T) {
 	g := initTestGatherer(t)
 	m := dummyMsg()
 	g.add(m)
-	assert.Contains(t, g.entities, g.resolveLookupName(m))
-	assert.Equal(t, m, g.entities[g.resolveLookupName(m)])
+	assert.Contains(t, g.entities, g.resolveFullyQualifiedName(m))
+	assert.Equal(t, m, g.entities[g.resolveFullyQualifiedName(m)])
 }
 
 func TestGatherer_SeenName(t *testing.T) {
@@ -693,6 +695,122 @@ func TestGatherer_SeenObj(t *testing.T) {
 	e, ok := g.seenObj(o)
 	assert.True(t, ok)
 	assert.Equal(t, m, e)
+}
+
+func TestGatherer_NameByPath(t *testing.T) {
+	t.Parallel()
+
+	file := &descriptor.FileDescriptorProto{
+		Package: proto.String("my.package"),
+		Name:    proto.String("file.proto"),
+		MessageType: []*descriptor.DescriptorProto{
+			&descriptor.DescriptorProto{
+				Name: proto.String("MyMessage"),
+				Field: []*descriptor.FieldDescriptorProto{
+					&descriptor.FieldDescriptorProto{Name: proto.String("my_field")},
+					&descriptor.FieldDescriptorProto{Name: proto.String("my_oneof_field")},
+				},
+				NestedType: []*descriptor.DescriptorProto{
+					&descriptor.DescriptorProto{Name: proto.String("MyNestedMessage")},
+				},
+				OneofDecl: []*descriptor.OneofDescriptorProto{
+					&descriptor.OneofDescriptorProto{Name: proto.String("my_oneof")},
+				},
+			},
+		},
+		EnumType: []*descriptor.EnumDescriptorProto{
+			&descriptor.EnumDescriptorProto{
+				Name: proto.String("MyEnum"),
+				Value: []*descriptor.EnumValueDescriptorProto{
+					&descriptor.EnumValueDescriptorProto{Name: proto.String("FIRST")},
+					&descriptor.EnumValueDescriptorProto{Name: proto.String("SECOND")},
+				},
+			},
+		},
+		Service: []*descriptor.ServiceDescriptorProto{
+			&descriptor.ServiceDescriptorProto{
+				Name: proto.String("MyService"),
+				Method: []*descriptor.MethodDescriptorProto{
+					&descriptor.MethodDescriptorProto{Name: proto.String("MyMethod")},
+				},
+			},
+		},
+	}
+
+	g := initTestGatherer(t)
+
+	testCases := []struct {
+		name string
+		path []int32
+		want string
+	}{
+		{
+			name: "Package",
+			path: []int32{2},
+			want: ".my.package",
+		},
+		{
+			name: "Message",
+			path: []int32{4, 0},
+			want: ".my.package.MyMessage",
+		},
+		{
+			name: "Field in Message",
+			path: []int32{4, 0, 2, 0},
+			want: ".my.package.MyMessage.my_field",
+		},
+		{
+			name: "OneOf Field in Message",
+			path: []int32{4, 0, 2, 1},
+			want: ".my.package.MyMessage.my_oneof_field",
+		},
+		{
+			name: "NestedMessage in Message",
+			path: []int32{4, 0, 3, 0},
+			want: ".my.package.MyMessage.MyNestedMessage",
+		},
+		{
+			name: "OneOf in Message",
+			path: []int32{4, 0, 8, 0},
+			want: ".my.package.MyMessage.my_oneof",
+		},
+		{
+			name: "Enum",
+			path: []int32{5, 0},
+			want: ".my.package.MyEnum",
+		},
+		{
+			name: "EnumValue1 in Enum",
+			path: []int32{5, 0, 2, 0},
+			want: ".my.package.MyEnum.FIRST",
+		},
+		{
+			name: "EnumValue2 in Enum",
+			path: []int32{5, 0, 2, 1},
+			want: ".my.package.MyEnum.SECOND",
+		},
+		{
+			name: "Service",
+			path: []int32{6, 0},
+			want: ".my.package.MyService",
+		},
+		{
+			name: "Method in Service",
+			path: []int32{6, 0, 2, 0},
+			want: ".my.package.MyService.MyMethod",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			v, err := g.nameByPath(file, tc.path)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.want, v)
+		})
+	}
+
 }
 
 type mockObject struct {

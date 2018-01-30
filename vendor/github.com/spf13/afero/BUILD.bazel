@@ -12,7 +12,6 @@ go_library(
         "ioutil.go",
         "match.go",
         "memmap.go",
-        "memradix.go",
         "os.go",
         "path.go",
         "readonlyfs.go",

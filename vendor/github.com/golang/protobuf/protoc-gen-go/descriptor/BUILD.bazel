@@ -7,9 +7,3 @@ go_library(
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/golang/protobuf/proto:go_default_library"],
 )
-
-filegroup(
-    name = "go_default_library_protos",
-    srcs = ["descriptor.proto"],
-    visibility = ["//visibility:public"],
-)

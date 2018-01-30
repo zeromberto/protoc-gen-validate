@@ -10,9 +10,3 @@ go_library(
         "//vendor/github.com/golang/protobuf/protoc-gen-go/testdata/multi:go_default_library",
     ],
 )
-
-filegroup(
-    name = "go_default_library_protos",
-    srcs = ["test.proto"],
-    visibility = ["//visibility:public"],
-)

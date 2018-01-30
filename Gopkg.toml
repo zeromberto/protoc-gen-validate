@@ -1,0 +1,7 @@
+[[constraint]]
+  name = "github.com/lyft/protoc-gen-star"
+  branch = "protobuf-apr-30-changes"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/net"

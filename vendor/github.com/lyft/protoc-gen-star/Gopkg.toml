@@ -1,0 +1,15 @@
+[[constraint]]
+  name = "github.com/golang/protobuf"
+  branch = "dev"
+
+[[constraint]]
+  name = "github.com/spf13/afero"
+  version = "1.0.2"
+
+[[constraint]]
+  name = "github.com/stretchr/testify"
+  version = "1.2.0"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/sync"

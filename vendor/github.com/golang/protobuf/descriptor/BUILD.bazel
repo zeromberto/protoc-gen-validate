@@ -17,7 +17,7 @@ go_test(
     importpath = "github.com/golang/protobuf/descriptor_test",
     deps = [
         ":go_default_library",
-        "//vendor/github.com/golang/protobuf/proto/testdata:go_default_library",
+        "//vendor/github.com/golang/protobuf/proto/test_proto:go_default_library",
         "//vendor/github.com/golang/protobuf/protoc-gen-go/descriptor:go_default_library",
     ],
 )

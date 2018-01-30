@@ -38,13 +38,17 @@ type enum struct {
 	parent ParentEntity
 
 	vals []EnumValue
+
+	comments string
 }
 
 func (e *enum) Name() Name                            { return Name(e.rawDesc.GetName()) }
+func (e *enum) FullyQualifiedName() string            { return fullyQualifiedName(e.parent, e) }
 func (e *enum) Syntax() Syntax                        { return e.parent.Syntax() }
 func (e *enum) Package() Package                      { return e.parent.Package() }
 func (e *enum) File() File                            { return e.parent.File() }
 func (e *enum) BuildTarget() bool                     { return e.parent.BuildTarget() }
+func (e *enum) Comments() string                      { return e.comments }
 func (e *enum) Descriptor() *generator.EnumDescriptor { return e.genDesc }
 func (e *enum) Parent() ParentEntity                  { return e.parent }
 func (e *enum) Imports() []Package                    { return nil }
@@ -84,6 +88,5 @@ func (e *enum) addValue(v EnumValue) {
 }
 
 func (e *enum) setParent(p ParentEntity) { e.parent = p }
-func (e *enum) lookupName() string       { return lookupName(e.parent, e) }
 
 var _ Enum = (*enum)(nil)

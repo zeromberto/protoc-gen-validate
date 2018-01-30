@@ -374,15 +374,15 @@ def go_proto_repositories(shared = 1):
   go_repository(
       name = "com_github_golang_protobuf",
       importpath = "github.com/golang/protobuf",
-      commit = "5afd06f9d81a86d6e3bb7dc702d6bd148ea3ff23",
+      commit = "57af8637f022e8bf7f313f6156d9873b7f5ebaba",
   )
   if shared:
     # if using multiple *_proto_library, allows caller to skip this.
     native.http_archive(
         name = "com_github_google_protobuf",
-        url = "https://github.com/google/protobuf/archive/v3.4.0.tar.gz",
-        strip_prefix = "protobuf-3.4.0",
-        sha256 = "cd55ee08e64a86cf12aaadd4672961813f592c194ed0c9ad94da0ec75acf219f",
+        url = "https://github.com/google/protobuf/archive/57af8637f022e8bf7f313f6156d9873b7f5ebaba.tar.gz",
+        strip_prefix = "protobuf-57af8637f022e8bf7f313f6156d9873b7f5ebaba",
+        sha256 = "7b493e949c504cb170f951994d945bb3d8062753e2e308799f4c01a806d2a804",
     )
 
   # Needed for gRPC, only loaded by bazel if used

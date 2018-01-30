@@ -17,12 +17,3 @@ go_library(
         "//vendor/github.com/golang/protobuf/ptypes/wrappers:go_default_library",
     ],
 )
-
-filegroup(
-    name = "go_default_library_protos",
-    srcs = [
-        "more_test_objects.proto",
-        "test_objects.proto",
-    ],
-    visibility = ["//visibility:public"],
-)
