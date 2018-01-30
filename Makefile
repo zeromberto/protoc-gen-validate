@@ -30,12 +30,11 @@ quick:
 	go test
 
 .PHONY: tests
-tests:
+tests: validate/validate.pb.go
 	# runs all tests against the package with race detection and coverage percentage
 	go test -race -cover
 	# tests validate proto generation
-	bazel build //validate:go_default_library \
-		&& diff $$(bazel info bazel-genfiles)/validate/validate.pb.go validate/validate.pb.go
+	diff $$(bazel info bazel-genfiles)/validate/validate.pb.go validate/validate.pb.go
 
 .PHONY: cover
 cover:
@@ -90,6 +89,10 @@ testcases:
 		--go_out="Mtests/harness/cases/other_package/embed.proto=github.com/lyft/protoc-gen-validate/tests/harness/cases/other_package/go,${VALIDATE_IMPORT}:./go" \
 		--validate_out="lang=go:./go" \
 		./*.proto
+
+validate/validate.pb.go:
+	bazel build //validate:go_default_library \
+		&& cp $$(bazel info bazel-genfiles)/validate/validate.pb.go validate/validate.pb.go
 
 tests/harness/harness.pb.go:
 	# generates the test harness protos
