@@ -1,6 +1,7 @@
 # protoc-gen-validate (PGV)
 
-*This project is currently in **alpha**. The API should be considered unstable and likely to change*
+*This project is currently in **alpha**.
+The API should be considered unstable and likely to change*
 
 PGV is a protoc plugin to generate polyglot message validators. While protocol buffers effectively guarantee the types of structured data, they cannot enforce semantic rules for values. This plugin adds support to protoc-generated code to validate such constraints.
 
