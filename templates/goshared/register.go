@@ -104,7 +104,14 @@ func (fns goSharedFuncs) errName(m pgs.Message) pgs.Name {
 
 func (fns goSharedFuncs) errIdxCause(ctx shared.RuleContext, idx, cause string, reason ...interface{}) string {
 	f := ctx.Field
-	n := fns.Name(f)
+
+	var n pgs.Name
+	useProtoName, _ := fns.Params().BoolDefault("error_proto_field_name", false)
+	if useProtoName {
+		n = pgs.Name(f.Descriptor().GetName())
+	} else {
+		n = fns.Name(f)
+	}
 
 	var fld string
 	if idx != "" {
