@@ -95,8 +95,8 @@ testcases: gogofast
 		--go_out="${GO_IMPORT}:./go" \
 		--plugin=protoc-gen-gogofast=$(shell pwd)/gogofast \
 		--gogofast_out="${GOGO_IMPORT}:./gogo" \
-		--validate_out="lang=go:./go" \
-		--validate_out="lang=gogo:./gogo" \
+		--validate_out="lang=go,error_proto_field_name=true:./go" \
+		--validate_out="lang=gogo,error_proto_field_name=true:./gogo" \
 		./*.proto
 	cd tests/harness/cases && \
 	protoc \
@@ -105,8 +105,8 @@ testcases: gogofast
 		--go_out="Mtests/harness/cases/other_package/embed.proto=${PACKAGE}/tests/harness/cases/other_package/go,${GO_IMPORT}:./go" \
 		--plugin=protoc-gen-gogofast=$(shell pwd)/gogofast \
 		--gogofast_out="Mtests/harness/cases/other_package/embed.proto=${PACKAGE}/tests/harness/cases/other_package/gogo,${GOGO_IMPORT}:./gogo" \
-		--validate_out="lang=go,Mtests/harness/cases/other_package/embed.proto=${PACKAGE}/tests/harness/cases/other_package/go:./go" \
-		--validate_out="lang=gogo,Mtests/harness/cases/other_package/embed.proto=${PACKAGE}/tests/harness/cases/other_package/gogo:./gogo" \
+		--validate_out="lang=go,error_proto_field_name=true,Mtests/harness/cases/other_package/embed.proto=${PACKAGE}/tests/harness/cases/other_package/go:./go" \
+		--validate_out="lang=gogo,error_proto_field_name=true,Mtests/harness/cases/other_package/embed.proto=${PACKAGE}/tests/harness/cases/other_package/gogo:./gogo" \
 		./*.proto
 
 tests/harness/go/harness.pb.go:
@@ -123,10 +123,12 @@ tests/harness/gogo/harness.pb.go: gogofast
 tests/harness/go/main/go-harness:
 	# generates the go-specific test harness
 	go build -o ./tests/harness/go/main/go-harness ./tests/harness/go/main
+	go build -o ./tests/harness/go/proto_names/go-harness ./tests/harness/go/proto_names
 
 tests/harness/gogo/main/go-harness:
 	# generates the gogo-specific test harness
 	go build -o ./tests/harness/gogo/main/go-harness ./tests/harness/gogo/main
+	go build -o ./tests/harness/proto_names/main/go-harness ./tests/harness/gogo/proto_names
 
 tests/harness/cc/cc-harness: tests/harness/cc/harness.cc
 	# generates the C++-specific test harness
@@ -149,7 +151,9 @@ clean:
 		gogofast \
 		tests/harness/cc/cc-harness \
 		tests/harness/go/main/go-harness \
+		tests/harness/go/proto_names/go-harness \
 		tests/harness/gogo/main/go-harness \
+		tests/harness/gogo/proto_names/go-harness \
 		tests/harness/gogo/harness.pb.go \
 		tests/harness/gogo/harness.pb.go \
 		tests/harness/go/harness.pb.go
