@@ -128,7 +128,7 @@ tests/harness/go/main/go-harness:
 tests/harness/gogo/main/go-harness:
 	# generates the gogo-specific test harness
 	go build -o ./tests/harness/gogo/main/go-harness ./tests/harness/gogo/main
-	go build -o ./tests/harness/proto_names/main/go-harness ./tests/harness/gogo/proto_names
+	go build -o ./tests/harness/gogo/proto_names/go-harness ./tests/harness/gogo/proto_names
 
 tests/harness/cc/cc-harness: tests/harness/cc/harness.cc
 	# generates the C++-specific test harness
