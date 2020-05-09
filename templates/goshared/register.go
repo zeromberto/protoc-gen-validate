@@ -47,6 +47,7 @@ func Register(tpl *template.Template, params pgs.Parameters) {
 		"tsLit":         fns.tsLit,
 		"tsStr":         fns.tsStr,
 		"typ":           fns.Type,
+		"unimplemented": fns.failUnimplemented,
 		"unwrap":        fns.unwrap,
 		"externalEnums": fns.externalEnums,
 		"enumPackages":  fns.enumPackages,
@@ -334,4 +335,8 @@ func (fns goSharedFuncs) enumPackages(enums []pgs.Enum) map[pgs.FilePath]pgs.Nam
 
 func (fns goSharedFuncs) snakeCase(name string) string {
 	return strcase.ToSnake(name)
+}
+
+func (fns goSharedFuncs) failUnimplemented(message string) string {
+	return fmt.Sprintf(`return errors.New("%s")`, message)
 }
